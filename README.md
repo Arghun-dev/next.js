@@ -271,3 +271,61 @@ export async function getStaticProps(context) {
   }
 }
 ````
+
+Note: `notFound` is not needed for `fallback: false` mode as only paths returned from `getStaticPaths` will be pre-rendered.
+
+`redirect` - An optional redirect value to allow redirecting to internal and external resources. It should match the shape of { destination: string, permanent: boolean }. In some rare cases, you might need to assign a custom status code for older HTTP Clients to properly redirect. In these cases, you can use the statusCode property instead of the permanent property, but not both. Below is an example of how it works:
+
+```js
+export async function getStaticProps(context) {
+  const res = await fetch(`https://...`)
+  const data = await res.json()
+
+  if (!data) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    }
+  }
+
+  return {
+    props: { data }, // will be passed to the page component as props
+  }
+}
+```
+
+**Note: Redirecting at build-time is currently not allowed and if the redirects are known at build-time they should be added in next.config.js.**
+
+### Simple Example
+
+Here's an example which uses `getStaticProps` to fetch a list of blog posts from a CMS (content management system)
+
+```js
+export default function Blog({ posts }) {
+  return (
+    <div>
+      {posts.map(post => <p>{post.title}</p>)}
+    </div>
+  )
+}
+
+// This function gets called at build time on server-side.
+// It won't be called on client-side, so you can even do
+// direct database queries. See the "Technical details" section.
+export async function getStaticProps() {
+  // Call an external API endpoint to get posts.
+  // You can use any data fetching library
+  const res = await fetch(API)
+  const posts = await res.json()
+  
+  // By returning { props: { posts } }, the Blog component
+  // will receive `posts` as a prop at build time
+  return {
+    props: {
+      posts
+    }
+  }
+}
+```
