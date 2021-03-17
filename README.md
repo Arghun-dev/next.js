@@ -96,3 +96,33 @@ export async function getStaticProps() {
 
 export default Blog
 ```
+
+**Your Page Paths depends on external data**
+
+Next.js allows you to create pages with dynamic routes. For example, you can create a file called `pages/posts/[id].js` to show a single blog post based on id. This will allow you to show a blog post with id: 1 when you access posts/1.
+
+However, which `id` you want to pre-render at build time might depend on external data.
+
+Example: suppose that you've only added one blog post `(with id: 1)` to the database. In this case, you'd only want to pre-render `posts/1` at build time.
+
+Later, you might add the second post with `id: 2`. Then you'd want to pre-render `posts/2` as well.
+
+So your page paths that are pre-rendered depend on external data. To handle this, Next.js lets you export an `asyn`c function called `getStaticPaths` from a dynamic page (pages/posts/[id].js in this case). This function gets called at build time and lets you specify which paths you want to pre-render.
+
+```js
+// This function gets called at build time
+export async function getStaticPaths() {
+  // Call an external API endpoint to get posts
+  const res = await fetch('https://.../posts')
+  const posts = await res.json()
+
+  // Get the paths we want to pre-render based on posts
+  const paths = posts.map((post) => ({
+    params: { id: post.id },
+  }))
+
+  // We'll pre-render only these paths at build time.
+  // { fallback: false } means other routes should 404.
+  return { paths, fallback: false }
+}
+```
