@@ -239,3 +239,35 @@ export async function getStaticProps(context) {
 ```
 
 **The `context` parameter is an object containing the following keys:**
+
+1.`params` contains the `route parameters` for pages using dynamic routes. For example, if the page name is [id].js , then params will look like `{ id: ... }`. To learn more, take a look at the Dynamic Routing documentation. You should use this together with getStaticPaths, which we’ll explain later.
+
+2.`preview` is true if the page is in the preview mode and undefined otherwise.
+3.`previewData` contains the preview data set by setPreviewData. See the Preview Mode documentation.
+4.`locale` contains the active locale (if enabled).
+5.`locales` contains all supported locales (if enabled).
+6.`defaultLocale` contains the configured default locale (if enabled).
+7.`getStaticProps` should return an object with:
+
+`props` - A required object with the props that will be received by the page component. It should be a serializable object
+
+`revalidate` - An optional amount in seconds after which a page re-generation can occur. More on Incremental Static Regeneration
+
+`notFound` - An optional boolean value to allow the page to return a 404 status and page. Below is an example of how it works:
+
+```js
+export async function getStaticProps(context) {
+  const res = await fetch(API)
+  const data = await res.json()
+  
+  if (!data) {
+    return {
+      notFound: true
+    }
+  }
+  
+  return {
+    props: { data } // will be passed to the component as props
+  }
+}
+````
