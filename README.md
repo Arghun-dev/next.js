@@ -329,3 +329,139 @@ export async function getStaticProps() {
   }
 }
 ```
+
+### When Should I use `getStaticProps`?
+
+You should use `getStaticProps` if:
+
+The data required to render the page is `available at build time` ahead of a user’s request.
+The data comes from a `headless CMS`.
+The data can be publicly cached (not user-specific).
+The page must be pre-rendered (for SEO) and be very fast — `getStaticProps` generates HTML and JSON files, both of which can be cached by a CDN for performance.
+
+### Typescript use `GetStaticProps`
+
+for typescript you can use the `GetStaticProps` type from `next`.
+
+```js
+import { GetStaticProps } from 'next'
+
+export const getStaticProps: GetStaticProps = async (context) => {
+  ...
+}
+```
+
+With getStaticProps you don't have to stop relying on dynamic content, as static content can also be dynamic. Incremental Static Regeneration allows you to update existing pages by re-rendering them in the background as traffic comes in.
+
+Inspired by stale-while-revalidate, background regeneration ensures traffic is served uninterruptedly, always from static storage, and the newly built page is pushed only after it's done generating.
+
+Consider our previous `getStaticProps` example, but now with regeneration enabled:
+
+```js
+function Blog({ posts }) {
+  return (
+    <ul>
+      {posts.map((post) => (
+        <li>{post.title}</li>
+      ))}
+    </ul>
+  )
+}
+
+// This function gets called at build time on server-side.
+// It may be called again, on a serverless function, if
+// revalidation is enabled and a new request comes in
+export async function getStaticProps() {
+  const res = await fetch('https://.../posts')
+  const posts = await res.json()
+
+  return {
+    props: {
+      posts,
+    },
+    // Next.js will attempt to re-generate the page:
+    // - When a request comes in
+    // - At most once every second
+    revalidate: 1, // In seconds
+  }
+}
+
+export default Blog
+```
+
+Now the list of blog posts will be revalidated once per second; if you add a new blog post it will be available almost immediately, without having to re-build your app or make a new deployment.
+
+This works perfectly with `fallback: true`. Because now you can have a list of posts that's always up to date with the latest posts, and have a blog post page that generates blog posts on-demand, no matter how many posts you add or update.
+
+### Static Content at scale
+
+Unlike traditional SSR, Incremental Static Regeneration ensures you retain the benefits of static:
+
+1.No spikes in latency. Pages are served consistently fast
+2.Pages never go offline. If the background page re-generation fails, the old page remains unaltered
+3.Low database and backend load. Pages are re-computed at most once concurrently
+
+### Reading Files: use `process.cwd()`
+
+file can be read directly from the file system in `getStaticProps`
+
+in order to do so, you have to have to get the full path to the file.
+
+Since, Next.js compiles your code into a separate directory, you can't use `__dirname` as the path it will return will be different from the pages directory.
+
+Instead you can use `process.cwd()` which gives you the directory where Next.js is being executed.
+
+```js
+import { promises as fs } from 'fs'
+import path from 'path'
+
+// posts will be populated at build time by getStaticProps()
+function Blog({ posts }) {
+  return (
+    <ul>
+      {posts.map((post) => (
+        <li>
+          <h3>{post.filename}</h3>
+          <p>{post.content}</p>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+// This function gets called at build time on server-side.
+// It won't be called on client-side, so you can even do
+// direct database queries. See the "Technical details" section.
+export async function getStaticProps() {
+  const postsDirectory = path.join(process.cwd(), 'posts')
+  const filenames = await fs.readdir(postsDirectory)
+
+  const posts = filenames.map(async (filename) => {
+    const filePath = path.join(postsDirectory, filename)
+    const fileContents = await fs.readFile(filePath, 'utf8')
+
+    // Generally you would parse/transform the contents
+    // For example you can transform markdown to HTML here
+
+    return {
+      filename,
+      content: fileContents,
+    }
+  })
+  // By returning { props: { posts } }, the Blog component
+  // will receive `posts` as a prop at build time
+  return {
+    props: {
+      posts: await Promise.all(posts),
+    },
+  }
+}
+
+export default Blog
+```
+
+## Technical Details
+
+### Only runs at build time
+
+Note that `getStaticProps` runs only on the `server-side`. It will never be run on the `client-side`. It won’t even be included in the JS bundle for the browser. That means you can write code such as direct database queries without them being sent to browsers. You should not fetch an API route from getStaticProps — instead, you can write the server-side code directly in getStaticProps.
