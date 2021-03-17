@@ -465,3 +465,111 @@ export default Blog
 ### Only runs at build time
 
 Note that `getStaticProps` runs only on the `server-side`. It will never be run on the `client-side`. It won’t even be included in the JS bundle for the browser. That means you can write code such as direct database queries without them being sent to browsers. You should not fetch an API route from getStaticProps — instead, you can write the server-side code directly in getStaticProps.
+
+### Statically Generates both HTML and CSS
+
+When a page with `getStaticProps` is pre-rendered at build time, in addition to the page HTML file, `Next.js` generates a JSON file holding the result of running getStaticProps.
+
+This JSON file will be used in client-side routing through next/link (documentation) or next/router (documentation). When you navigate to a page that’s pre-rendered using `getStaticProps`, Next.js fetches this JSON file (pre-computed at build time) and uses it as the props for the page component. This means that client-side page transitions will not call getStaticProps as only the exported JSON is used.
+
+### Only allowed in a page
+
+`getStaticProps` can only be exported from a page. You can’t export it from non-page files.
+
+One of the reasons for this restriction is that React needs to have all the required data before the page is rendered.
+
+Also, you must use `export async function getStaticProps() {}` — it will not work if you add getStaticProps as a property of the page component.
+
+### Runs on every request in development
+
+In development (next dev), getStaticProps will be called on every request.
+
+## getStaticPaths
+
+If you export an `async function called getStaticPaths` from a page that uses dynamic routes, Next.js will statically pre-render all the paths specified by getStaticPaths.
+
+```js
+export async function getStaticPaths() {
+  return {
+    paths: [
+      { params: { ... } } // See the "paths" section below
+    ],
+    fallback: true or false // See the "fallback" section below
+  };
+}
+```
+
+### The Paths key required
+
+The paths key determines which paths will be pre-rendered. For example, suppose that you have a page that uses dynamic routes named pages/posts/[id].js. If you export getStaticPaths from this page and return the following for paths:
+
+```js
+return {
+  paths: [
+    { params: { id: '1' } },
+    { params: { id: '2' } }
+  ],
+  fallback: ...
+}
+```
+
+Then `Next.js` will statically generate `posts/1` and `posts/2` at build time using the page component in `pages/posts/[id].js`.
+
+Note that the value for each params must match the parameters used in the page name:
+
+### The fallback is required
+
+The object returned by getStaticPaths must contain a boolean fallback key.
+
+If fallback is false, then any paths not returned by getStaticPaths will result in a 404 page. You can do this if you have a small number of paths to pre-render - so they are all statically generated during build time. It’s also useful when the new pages are not added often. If you add more items to the data source and need to render the new pages, you’d need to run the build again.
+
+Here’s an example which pre-renders one blog post per page called pages/posts/[id].js. The list of blog posts will be fetched from a CMS and returned by getStaticPaths . Then, for each page, it fetches the post data from a CMS using getStaticProps. This example is also in the Pages documentation.
+
+```js
+// pages/posts/[id].js
+
+function Post({ post }) {
+  // Render post...
+}
+
+// This function gets called at build time
+export async function getStaticPaths() {
+  // Call an external API endpoint to get posts
+  const res = await fetch('https://.../posts')
+  const posts = await res.json()
+
+  // Get the paths we want to pre-render based on posts
+  const paths = posts.map((post) => ({
+    params: { id: post.id },
+  }))
+
+  // We'll pre-render only these paths at build time.
+  // { fallback: false } means other routes should 404.
+  return { paths, fallback: false }
+}
+
+// This also gets called at build time
+export async function getStaticProps({ params }) {
+  // params contains the post `id`.
+  // If the route is like /posts/1, then params.id is 1
+  const res = await fetch(`https://.../posts/${params.id}`)
+  const post = await res.json()
+
+  // Pass post data to the page via props
+  return { props: { post } }
+}
+
+export default Post
+```
+
+## When Should I use getStaticPaths?
+
+You should use `getStaticPaths` if you're statically pre-rendering pages that use dynamic routes.
+
+## Typescript use GetStaticPaths
+
+or TypeScript, you can use the GetStaticPaths type from next:
+
+```js
+export const getStaticPaths: GetStaticPaths = async () => {...}
+```
