@@ -573,3 +573,27 @@ or TypeScript, you can use the GetStaticPaths type from next:
 ```js
 export const getStaticPaths: GetStaticPaths = async () => {...}
 ```
+
+### Technical Details
+
+**Use together with `getStaticProps`**
+
+When you use `getStaticProps` on a page with dynamic route parameters, you must use `getStaticPaths`
+
+You `cannot` use `getStaticPaths` with `getServerSideProps`.
+
+`getStaticPaths` only runs `at build time` on `server-side`.
+
+`getStaticPaths` can only be exported from a `page`. You can’t export it from non-page files.
+
+## getServerSideProps
+
+if you export an async function called `getServerSideProps` from a page, Next.js will pre-render this page on each request using the data returned by `getServerSideProps`.
+
+```js
+export async function getServerSideProps(context) {
+  return {
+    props: {...} // will be passed to the page component as props
+  }
+}
+```
