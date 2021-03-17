@@ -51,3 +51,48 @@ Some pages require fetching external data for pre-rendering. There are two scena
 
 1. Your page content depends on external data: Use `getStaticProps`.
 2. Your page paths depend on external data: Use `getStaticPaths` (usually in addition to getStaticProps)
+
+**Your Page Content depends on external data**
+
+Example: Your blog page might need to fetch the list of blog posts from a CMS (content management system).
+
+```js
+// TODO: Need to fetch `posts` (by calling some API endpoint)
+//       before this page can be pre-rendered.
+function Blog({ posts }) {
+  return (
+    <ul>
+      {posts.map((post) => (
+        <li>{post.title}</li>
+      ))}
+    </ul>
+  )
+}
+
+export default Blog
+```
+
+To fetch this data on pre-render, Next.js allows you to export an `async` function called `getStaticProps` from the same file. This function gets called at build time and lets you pass fetched data to the page's `props` on pre-render.
+
+```js
+function Blog({ posts }) {
+  // Render posts...
+}
+
+// This function gets called at build time
+export async function getStaticProps() {
+  // Call an external API endpoint to get posts
+  const res = await fetch('https://.../posts')
+  const posts = await res.json()
+
+  // By returning { props: { posts } }, the Blog component
+  // will receive `posts` as a prop at build time
+  return {
+    props: {
+      posts,
+    },
+  }
+}
+
+export default Blog
+```
