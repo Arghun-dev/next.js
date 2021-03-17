@@ -213,4 +213,29 @@ We've discussed two forms of pre-rendering for Next.js.
 
 `Static Generation (Recommended):` The HTML is generated at build time and will be reused on each request. To make a page use Static Generation, either export the page component, or export getStaticProps (and getStaticPaths if necessary). It's great for pages that can be pre-rendered ahead of a user's request. You can also use it with Client-side Rendering to bring in additional data.
 
-`Server-side Rendering:` The HTML is generated on each request. To make a page use Server-side Rendering, export getServerSideProps. Because Server-side Rendering results in slower performance than Static Generat
+`Server-side Rendering:` The HTML is generated on each request. To make a page use Server-side Rendering, export getServerSideProps. Because Server-side Rendering results in slower performance than Static Generation.
+
+
+## Data Fetching
+
+We’ll talk about the three unique Next.js functions you can use to fetch data for pre-rendering:
+
+1.`getStaticProps (Static Generation)`: Fetch data at build time.
+2.`getStaticPaths (Static Generation)`: Specify dynamic routes to pre-render pages based on data.
+3.`getServerSideProps (Server-side Rendering)`: Fetch data on each request.
+
+In addition, we’ll talk briefly about how to fetch data on the client side.
+
+### getStaticProps (Static Generation)
+
+If you export an `async` function called `getStaticProps` from a page, Next.js will pre-render this page at build time using the props returned by `getStaticProps`.
+
+```js
+export async function getStaticProps(context) {
+  return {
+    props: {} // will be passed to the page component as props
+  }
+}
+```
+
+**The `context` parameter is an object containing the following keys:**
