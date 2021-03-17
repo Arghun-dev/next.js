@@ -151,3 +151,55 @@ export async function getStaticProps({ params }) {
 
 export default Post
 ```
+
+## When should I use Static Generation?
+
+We recommend using Static Generation (with and without data) whenever possible because your page can be built once and served by CDN, which makes it much faster than having a server render the page on every request.
+
+You can use Static Generation for many types of pages, including:
+
+1.Marketing pages
+2.Blog posts
+3.E-commerce product listings
+4.Help and documentation
+
+You should ask yourself: "Can I pre-render this page ahead of a user's request?" If the answer is yes, then you should choose Static Generation.
+
+On the other hand, Static Generation is not a good idea if you cannot pre-render a page ahead of a user's request. Maybe your page shows `frequently updated data`, and the `page content changes on every request`.
+
+In cases like this, you can do one of the following:
+
+1.Use Static Generation with Client-side Rendering: You can skip pre-rendering some parts of a page and then use client-side JavaScript to populate them. To learn more about this approach, check out the Data Fetching documentation.
+
+2.Use Server-Side Rendering: Next.js pre-renders a page on each request. It will be slower because the page cannot be cached by a CDN, but the pre-rendered page will always be up-to-date. We'll talk about this approach below.
+
+## Server Side Rendering
+
+`Also referred to as "SSR" or "Dynamic Rendering".`
+
+If a page uses **Server-side Rendering**, the page HTML is generated on **each request**.
+
+To use Server-side Rendering for a page, you need to export an `async` function called `getServerSideProps`. This function will be called by the server on every request.
+
+For example, suppose that your page needs to `pre-render frequently updated data (fetched from an external API)`. You can write `getServerSideProps` which fetches this data and passes it to Page like below:
+
+```js
+export default function Page({ data }) {
+  return (
+    // Render Data
+  )
+}
+
+// This gets called on every request
+export async function getServerSideProps() {
+  // Fetch Data from external API
+  const res = await fetch('...API')
+  const data = await res.json()
+  
+  return {
+    props: {
+      data
+    }
+  }
+}
+```
