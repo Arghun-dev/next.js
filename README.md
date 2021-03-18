@@ -921,3 +921,18 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   // ...
 }
 ```
+
+
+## Routing
+
+Next.js has a file-system based router built on the concept of pages.
+
+When a file is added to the pages directory it's automatically available as a route.
+
+
+### Index Routes
+
+The router will automatically route files named `index` to the `root` of the directory.
+
+-`pages/index.js → /`
+-`pages/blog/index.js → /blog`
