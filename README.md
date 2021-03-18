@@ -597,3 +597,143 @@ export async function getServerSideProps(context) {
   }
 }
 ```
+
+## Built in CSS Support
+
+### Adding a Global Stylesheet
+
+To add a stylesheet to your application, import the CSS file within `pages/_app.js`.
+
+For example, consider the following stylesheet named `styles.css`:
+
+```js
+body {
+  font-family: 'SF Pro Text', 'SF Pro Icons', 'Helvetica Neue', 'Helvetica',
+    'Arial', sans-serif;
+  padding: 20px 20px 60px;
+  max-width: 680px;
+  margin: 0 auto;
+}
+```
+
+Create a `pages/_app.js` file if not already present. Then, import the styles.css file.
+
+```js
+import '../styles.css'
+
+// This default export is required in a new `pages/_app.js` file.
+export default function MyApp({ Component, pageProps }) {
+  return <Component {...pageProps} />
+}
+```
+
+These `styles (styles.css)` will apply to all pages and components in your application. Due to the global nature of stylesheets, and to avoid conflicts, you may only import them inside `pages/_app.js`.
+
+In development, expressing stylesheets this way allows your styles to be hot reloaded as you edit them—meaning you can keep application state.
+
+In production, all CSS files will be automatically concatenated into a single minified `.css` file.
+
+### import styles from `node-modules`
+
+Since Next.js 9.5.4, importing a CSS file from node_modules is permitted anywhere in your application.
+
+For global stylesheets, like `bootstrap` or `nprogress`, you should import the file inside `pages/_app.js`. For example:
+
+```js
+// pages/_app.js
+import 'bootstrap/dist/css/bootstrap.css'
+
+export default function MyApp({ Component, pageProps }) {
+  return <Component {...pageProps} />
+}
+```
+
+For importing `CSS` required by a third party component, you can do so in your component. For example:
+
+```js
+// components/ExampleDialog.js
+import { useState } from 'react'
+import { Dialog } from '@reach/dialog'
+import '@reach/dialog/styles.css'
+
+function ExampleDialog(props) {
+  const [showDialog, setShowDialog] = useState(false)
+  const open = () => setShowDialog(true)
+  const close = () => setShowDialog(false)
+
+  return (
+    <div>
+      <button onClick={open}>Open Dialog</button>
+      <Dialog isOpen={showDialog} onDismiss={close}>
+        <button className="close-button" onClick={close}>
+          <VisuallyHidden>Close</VisuallyHidden>
+          <span aria-hidden>×</span>
+        </button>
+        <p>Hello there. I am a dialog</p>
+      </Dialog>
+    </div>
+  )
+}
+```
+
+### Adding a Component Level CSS
+
+Next.js supports CSS Modules using the `[name].module.css` file naming convention.
+
+CSS Modules locally scope CSS by automatically creating a unique class name. This allows you to use the same CSS class name in different files without worrying about collisions.
+
+This behavior makes CSS Modules the ideal way to include component-level CSS. CSS Module files can be imported anywhere in your application.
+
+For example, consider a reusable `Button` component in the components/ folder:
+
+First, create `components/Button.module.css` with the following content:
+
+```js
+/*
+You do not need to worry about .error {} colliding with any other `.css` or
+`.module.css` files!
+*/
+.error {
+  color: white;
+  background-color: red;
+}
+```
+
+Then, create `components/Button.js`, importing and using the above CSS file:
+
+```js
+import styles from './Button.module.css'
+
+export function Button() {
+  return (
+    <button
+      type="button"
+      // Note how the "error" class is accessed as a property on the imported
+      // `styles` object.
+      className={styles.error}
+    >
+      Destroy
+    </button>
+  )
+}
+```
+
+CSS Modules are an optional feature and are only enabled for files with the `.module.css` extension. Regular `<link>` stylesheets and global CSS files are still supported.
+
+In production, all CSS Module files will be automatically concatenated into many minified and code-split `.css` files. These `.css` files represent hot execution paths in your application, ensuring the minimal amount of CSS is loaded for your application to paint.
+
+### Sass Support
+
+Next.js allows you to import `Sass` using both the `.scss` and `.sass` extensions. You can use component-level Sass via CSS Modules and the `.module.scss` or `.module.sass`
+extension.
+
+Before you can use `Next.js'` built-in `Sass` support, be sure to install sass:
+
+`$. npm install sass`
+
+### Less and Stylus Support
+
+To support importing `.less` or `.styl` files you can use the following plugins:
+
+- `@zeit/next-less`
+- `@zeit/next-stylus`
