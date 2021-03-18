@@ -896,6 +896,4 @@ npm run dev
 
 You're now ready to start converting files from `.js` to `.tsx` and leveraging the benefits of TypeScript!.
 
-```js
-A file named next-env.d.ts will be created in the root of your project. This file ensures Next.js types are picked up by the TypeScript compiler. You cannot remove it, however, you can edit it (but you don't need to).
-```
+**A file named `ext-env.d.ts`will be created in the root of your project. This file ensures Next.js types are picked up by the TypeScript compiler. `ou cannot remove it` however, you can edit it `but you don't need to)`**
