@@ -897,3 +897,27 @@ npm run dev
 You're now ready to start converting files from `.js` to `.tsx` and leveraging the benefits of TypeScript!.
 
 **A file named `ext-env.d.ts`will be created in the root of your project. This file ensures Next.js types are picked up by the TypeScript compiler. `ou cannot remove it` however, you can edit it `but you don't need to)`**
+
+**TypeScript `strict mode` is `turned off` by default. When you feel comfortable with TypeScript, `it's recommended to turn it on in your tsconfig.json.`**
+
+By default, Next.js will do type checking as part of next build. We recommend using code editor type checking during development.
+
+### Static Generation and Server-side Rendering
+
+For `getStaticProps`, `getStaticPaths`, and `getServerSideProps`, you can use the `GetStaticProps`, `GetStaticPaths`, and `GetServerSideProps` types respectively:
+
+```js
+import { GetStaticProps, GetStaticPaths, GetServerSideProps } from 'next'
+
+export const getStaticProps: GetStaticProps = async (context) => {
+  // ...
+}
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  // ...
+}
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  // ...
+}
+```
