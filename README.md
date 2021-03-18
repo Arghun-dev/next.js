@@ -985,3 +985,106 @@ function Home() {
 
 export default Home
 ```
+
+### Linking to dynamic paths
+
+You can also use interpolation to create the path, which comes in handy for dynamic route segments. For example, to show a list of posts which have been passed to the component as a prop:
+
+```js
+import Link from 'next/link'
+
+function Posts({ posts }) {
+  return (
+    <ul>
+      {posts.map((post) => (
+        <li key={post.id}>
+          <Link href={`/blog/${encodeURIComponent(post.slug)}`}>
+            <a>{post.title}</a>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+export default Posts
+```
+
+`encodeURIComponent` is used in the example to keep the path utf-8 compatible.
+
+### Dynamic Routes
+
+Defining routes by using predefined paths is not always enough for complex applications. In Next.js you can add brackets to a page ([param]) to create a dynamic route (a.k.a. url slugs, pretty urls, and others).
+
+Consider the following page `pages/post/[pid].js`:
+
+```js
+import { useRouter } from 'next/router'
+
+const Post = () => {
+  const router = useRouter()
+  const { pid } = router.query
+
+  return <p>Post: {pid}</p>
+}
+
+export default Post
+```
+
+Any route like `/post/1`, `/post/abc`, etc. will be matched by `pages/post/[pid].js`. The matched path parameter will be sent as a query parameter to the page, and it will be merged with the other query parameters.
+
+For example, the route `/post/abc` will have the following `query` object:
+
+```js
+{ "pid": "abc" }
+```
+
+Similarly, the route `/post/abc?foo=bar` will have the following query object:
+
+```js
+{ "foo": "bar", "pid": "abc" }
+```
+
+However, route parameters will override query parameters with the same name. For example, the route `/post/abc?pid=123` will have the following query object:
+
+```js
+{ "pid": "abc" }
+```
+
+Multiple dynamic route segments work the same way. The page `pages/post/[pid]/[comment].js` will match the route `/post/abc/a-comment` and its query object will be:
+
+```js
+{ "pid": "abc", "comment": "a-comment" }
+```
+
+Client-side navigations to dynamic routes are handled with next/link. If we wanted to have links to the routes used above it will look like this:
+
+```js
+import Link from 'next/link'
+
+function Home() {
+  return (
+    <ul>
+      <li>
+        <Link href="/post/abc">
+          <a>Go to pages/post/[pid].js</a>
+        </Link>
+      </li>
+      <li>
+        <Link href="/post/abc?foo=bar">
+          <a>Also goes to pages/post/[pid].js</a>
+        </Link>
+      </li>
+      <li>
+        <Link href="/post/abc/a-comment">
+          <a>Go to pages/post/[pid]/[comment].js</a>
+        </Link>
+      </li>
+    </ul>
+  )
+}
+
+export default Home
+```
+
+### Catch all Routes
