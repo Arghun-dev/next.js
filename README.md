@@ -934,5 +934,5 @@ When a file is added to the pages directory it's automatically available as a ro
 
 The router will automatically route files named `index` to the `root` of the directory.
 
--`pages/index.js → /`
--`pages/blog/index.js → /blog`
+- `pages/index.js → /`
+- `pages/blog/index.js → /blog`
