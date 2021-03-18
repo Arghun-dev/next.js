@@ -737,3 +737,132 @@ To support importing `.less` or `.styl` files you can use the following plugins:
 
 - `@zeit/next-less`
 - `@zeit/next-stylus`
+
+If using the less plugin, don't forget to add a dependency on less as well, otherwise you'll see an error like:
+
+`Error: Cannot find module 'less'`
+
+
+### CSS in JS
+
+It's possible to use any existing `CSS-in-JS` solution. The simplest one is inline styles:
+
+```js
+function HiThere() {
+  return <p style={{ color: 'red' }}>hi there</p>
+}
+
+export default HiThere
+```
+
+See the above examples for other popular CSS-in-JS solutions (like Styled Components).
+
+A component using `styled-jsx` looks like this:
+
+```js
+function HelloWorld() {
+  return (
+    <div>
+      Hello world
+      <p>scoped!</p>
+      <style jsx>{`
+        p {
+          color: blue;
+        }
+        div {
+          background: red;
+        }
+        @media (max-width: 600px) {
+          div {
+            background: blue;
+          }
+        }
+      `}</style>
+      <style global jsx>{`
+        body {
+          background: black;
+        }
+      `}</style>
+    </div>
+  )
+}
+
+export default HelloWorld
+```
+
+
+## Image Component and Image Optimization
+
+Since version 10.0.0, Next.js has a built-in Image Component and Automatic Image Optimization.
+
+The Next.js Image Component, `next/image`, is an extension of the HTML <img> element, evolved for the modern web.
+
+The Automatic Image Optimization allows for `resizing`, `optimizing`, and `serving` images in modern formats like `WebP` when the browser supports it. This avoids shipping large images to devices with a smaller viewport. It also allows Next.js to automatically adopt future image formats and serve them to browsers that support those formats.
+
+Automatic Image Optimization works with any image source. Even if the image is hosted by an external data source, like a CMS, it can still be optimized.
+
+Instead of optimizing images at build time, Next.js optimizes images on-demand, as users request them. Unlike static site generators and static-only solutions, your build times aren't increased, whether shipping 10 images or 10 million images.
+
+Images are lazy loaded by default. That means your page speed isn't penalized for images outside the viewport. Images load as they are scrolled into viewport.
+
+### Image Component
+
+To add an image to your application, import the `next/image` component:
+
+```js
+import Image from 'next/image'
+
+function Home() {
+  return (
+    <>
+      <h1>My Homepage</h1>
+      <Image
+        src="/me.png"
+        alt="Picture of the author"
+        width={500}
+        height={500}
+      />
+      <p>Welcome to my homepage!</p>
+    </>
+  )
+}
+
+export default Home
+```
+
+## Static File Serving
+
+Next.js can serve static files, like `images`, under a folder called `public` in the root directory. **Files inside public can then be referenced by your code starting from the base URL (/)**.
+
+For example, if you add an image to `public/me.png`, the following code will access the image:
+
+```js
+import Image from 'next/image'
+
+function Avatar() {
+  return <Image src="/me.png" alt="me" width="64" height="64" />
+}
+
+export default Avatar
+```
+
+**Note: next/image requires Next.js `10 or later`.**
+
+This folder is also useful for `robots.txt`, `favicon.ico`, Google Site Verification, and any other static files (including .html)!
+
+**Note: Don't name the `public` directory anything else. The name cannot be changed and is the only directory used to serve static assets.**
+
+**Note: Be sure to not have a static file with the same name as a file in the `pages/` directory, as this will result in an error.**
+
+**Note: Only assets that are in the public directory at build time will be served by Next.js. Files added at runtime won't be available. We recommend using a third party service like AWS S3 for persistent file storage.**
+
+
+## Fast Refresh
+
+Fast Refresh is a Next.js feature that gives you instantaneous feedback on edits made to your React components. Fast Refresh is enabled by default in all Next.js applications on `9.4 or newer`. With Next.js Fast Refresh enabled, most edits should be visible within a second, without losing component state.
+
+### How It Works?
+
+- If you edit a file that only exports React component(s), Fast Refresh will update the code only for that file, and re-render your component. You can edit anything in that file, including styles, rendering logic, event handlers, or effects.
+- If you edit a file with exports that aren't React components, Fast Refresh will re-run both that file, and the other files importing it. So if both Button.js and Modal.js import theme.js, editing theme.js will update both components.
+- Finally, if you edit a file that's imported by files outside of the React tree, Fast Refresh will fall back to doing a full reload. You might have a file which renders a React component but also exports a value that is imported by a non-React component. For example, maybe your component also exports a constant, and a non-React utility file imports it. In that case, consider migrating the constant to a separate file and importing it into both files. This will re-enable Fast Refresh to work. Other cases can usually be solved in a similar way.
