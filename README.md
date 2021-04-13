@@ -1087,4 +1087,4 @@ function Home() {
 export default Home
 ```
 
-### Catch all Routes
+# Tip: In Next you should not make serverSide to run more than once.
